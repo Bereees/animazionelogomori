@@ -1,0 +1,44 @@
+/* Logo Annamori — pulse alternato punte */
+
+.logo-annamori {
+  display: inline-block;
+  line-height: 0;
+}
+
+.logo-annamori svg,
+.logo-annamori-svg {
+  width: 120px;
+  height: auto;
+  display: block;
+  shape-rendering: geometricPrecision;
+}
+
+:root {
+  --ray-long-min: 0.6180;
+  --ray-short-max: 1.6180;
+}
+
+@keyframes ray-pulse-long {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(var(--ray-long-min)); }
+}
+
+@keyframes ray-pulse-short {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(var(--ray-short-max)); }
+}
+
+.ray-long {
+  animation: ray-pulse-long 2s ease-in-out infinite;
+}
+
+.ray-short {
+  animation: ray-pulse-short 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ray-long,
+  .ray-short {
+    animation: none;
+  }
+}
