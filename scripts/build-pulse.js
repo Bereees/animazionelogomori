@@ -1,5 +1,5 @@
 /**
- * Build animated logo: alternating long/short tip pulse, no rotation.
+ * Build animated logo: alternating long/short tip pulse + counter-clockwise spin.
  * Each spike uses the exact triangle from the original path outline.
  */
 const fs = require("fs");
@@ -127,14 +127,16 @@ const rayMarkup = rays
   .join("\n");
 
 const svg = `<svg viewBox="0 0 5519 5519" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="logo-annamori-svg">
-  <g id="sun">
+  <g id="sun" class="sun-rotate">
     <circle class="sun-core" cx="${fmt(CX)}" cy="${fmt(CY)}" r="${fmt(coreRadius)}" ${PATH_ATTRS}/>
 ${rayMarkup}
   </g>
 </svg>
 `;
 
-const css = `/* Logo Annamori — pulse alternato punte */
+const LOGO_SIZE = "320px";
+
+const css = `/* Logo Annamori — rotazione antioraria + pulse alternato punte */
 
 .logo-annamori {
   display: inline-block;
@@ -143,7 +145,7 @@ const css = `/* Logo Annamori — pulse alternato punte */
 
 .logo-annamori svg,
 .logo-annamori-svg {
-  width: 120px;
+  width: ${LOGO_SIZE};
   height: auto;
   display: block;
   shape-rendering: geometricPrecision;
@@ -152,6 +154,11 @@ const css = `/* Logo Annamori — pulse alternato punte */
 :root {
   --ray-long-min: ${SCALE_LONG_MIN.toFixed(4)};
   --ray-short-max: ${SCALE_SHORT_MAX.toFixed(4)};
+}
+
+@keyframes sun-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
 }
 
 @keyframes ray-pulse-long {
@@ -164,6 +171,11 @@ const css = `/* Logo Annamori — pulse alternato punte */
   50% { transform: scale(var(--ray-short-max)); }
 }
 
+.sun-rotate {
+  transform-origin: ${fmt(CX)}px ${fmt(CY)}px;
+  animation: sun-spin 30s linear infinite;
+}
+
 .ray-long {
   animation: ray-pulse-long 2s ease-in-out infinite;
 }
@@ -173,6 +185,7 @@ const css = `/* Logo Annamori — pulse alternato punte */
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .sun-rotate,
   .ray-long,
   .ray-short {
     animation: none;
@@ -219,13 +232,17 @@ const elementor = `<!-- Logo Annamori — incolla in Elementor > Widget HTML -->
   line-height: 0;
 }
 .logo-annamori-wrap svg {
-  width: 120px;
+  width: ${LOGO_SIZE};
   height: auto;
   display: block;
 }
 .logo-annamori-wrap {
   --ray-long-min: ${SCALE_LONG_MIN.toFixed(4)};
   --ray-short-max: ${SCALE_SHORT_MAX.toFixed(4)};
+}
+@keyframes logo-sun-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
 }
 @keyframes logo-ray-long {
   0%, 100% { transform: scale(1); }
@@ -235,9 +252,14 @@ const elementor = `<!-- Logo Annamori — incolla in Elementor > Widget HTML -->
   0%, 100% { transform: scale(1); }
   50% { transform: scale(var(--ray-short-max)); }
 }
+.logo-annamori-wrap .sun-rotate {
+  transform-origin: ${fmt(CX)}px ${fmt(CY)}px;
+  animation: logo-sun-spin 30s linear infinite;
+}
 .logo-annamori-wrap .ray-long { animation: logo-ray-long 2s ease-in-out infinite; }
 .logo-annamori-wrap .ray-short { animation: logo-ray-short 2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
+  .logo-annamori-wrap .sun-rotate,
   .logo-annamori-wrap .ray-long,
   .logo-annamori-wrap .ray-short { animation: none; }
 }
