@@ -1,5 +1,5 @@
 /**
- * Build animated logo: alternating long/short tip pulse, no rotation.
+ * Build animated logo: pulse alternato, pausa ogni ~6s, rotazione antioraria.
  * Each spike uses the exact triangle from the original path outline.
  */
 const fs = require("fs");
@@ -8,6 +8,38 @@ const path = require("path");
 const CX = 2759.1;
 const CY = 2759.1;
 const FILL = "#1a1a1a";
+const ACTIVE_S = 10.7; // rotazione + pulse prima della pausa
+const PAUSE_S = 2; // logo fermo come originale
+const CYCLE_S = ACTIVE_S + PAUSE_S;
+const PAUSE_FROM = +((ACTIVE_S / CYCLE_S) * 100).toFixed(2);
+const PULSE_PERIOD_S = 2; // durata di un ciclo corto↔lungo (indipendente dalla rotazione)
+
+function pct(seconds) {
+  return ((seconds / CYCLE_S) * 100).toFixed(2);
+}
+
+function buildRayPulseKeyframes(kind, prefix = "") {
+  const activeS = ACTIVE_S;
+  const pulses = Math.max(1, Math.floor(activeS / PULSE_PERIOD_S));
+  const peakScale =
+    kind === "long" ? "var(--ray-long-min)" : "var(--ray-short-max)";
+  const lines = [`  0% { transform: scale(1); }`];
+
+  for (let k = 0; k < pulses; k++) {
+    const peakS = (k + 0.5) * PULSE_PERIOD_S;
+    const endS = (k + 1) * PULSE_PERIOD_S;
+    lines.push(`  ${pct(peakS)}% { transform: scale(${peakScale}); }`);
+    lines.push(`  ${pct(endS)}% { transform: scale(1); }`);
+  }
+
+  lines.push(`  ${PAUSE_FROM}%, 100% { transform: scale(1); }`);
+  return `@keyframes ${prefix}ray-pulse-${kind} {\n${lines.join("\n")}\n}`;
+}
+
+const rayPulseLongCss = buildRayPulseKeyframes("long");
+const rayPulseShortCss = buildRayPulseKeyframes("short");
+const logoRayPulseLongCss = buildRayPulseKeyframes("long", "logo-");
+const logoRayPulseShortCss = buildRayPulseKeyframes("short", "logo-");
 
 const PATH_D =
   "M2759.1,0l108.238,1383.8l240.95,-829.379l-27.138,863.246l530.558,-1282.63l-324.675,1349.52" +
@@ -127,14 +159,14 @@ const rayMarkup = rays
   .join("\n");
 
 const svg = `<svg viewBox="0 0 5519 5519" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="logo-annamori-svg">
-  <g id="sun">
+  <g id="sun" class="sun-rotate">
     <circle class="sun-core" cx="${fmt(CX)}" cy="${fmt(CY)}" r="${fmt(coreRadius)}" ${PATH_ATTRS}/>
 ${rayMarkup}
   </g>
 </svg>
 `;
 
-const css = `/* Logo Annamori — pulse alternato punte */
+const css = `/* Logo Annamori — pulse, pausa, rotazione antioraria lenta */
 
 .logo-annamori {
   display: inline-block;
@@ -149,30 +181,45 @@ const css = `/* Logo Annamori — pulse alternato punte */
   shape-rendering: geometricPrecision;
 }
 
+.logo-annamori svg path,
+.logo-annamori svg circle,
+.logo-annamori-svg path,
+.logo-annamori-svg circle {
+  fill: ${FILL};
+  stroke: ${FILL};
+}
+
 :root {
   --ray-long-min: ${SCALE_LONG_MIN.toFixed(4)};
   --ray-short-max: ${SCALE_SHORT_MAX.toFixed(4)};
 }
 
-@keyframes ray-pulse-long {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(var(--ray-long-min)); }
+@keyframes sun-spin {
+  0% { transform: rotate(0deg); }
+  ${PAUSE_FROM}% { transform: rotate(-360deg); }
+  100% { transform: rotate(-360deg); }
 }
 
-@keyframes ray-pulse-short {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(var(--ray-short-max)); }
+${rayPulseLongCss}
+
+${rayPulseShortCss}
+
+.sun-rotate {
+  transform-origin: ${fmt(CX)}px ${fmt(CY)}px;
+  transform-box: view-box;
+  animation: sun-spin ${CYCLE_S}s linear infinite;
 }
 
 .ray-long {
-  animation: ray-pulse-long 2s ease-in-out infinite;
+  animation: ray-pulse-long ${CYCLE_S}s ease-in-out infinite;
 }
 
 .ray-short {
-  animation: ray-pulse-short 2s ease-in-out infinite;
+  animation: ray-pulse-short ${CYCLE_S}s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .sun-rotate,
   .ray-long,
   .ray-short {
     animation: none;
@@ -223,21 +270,31 @@ const elementor = `<!-- Logo Annamori — incolla in Elementor > Widget HTML -->
   height: auto;
   display: block;
 }
+.logo-annamori-wrap svg path,
+.logo-annamori-wrap svg circle {
+  fill: ${FILL};
+  stroke: ${FILL};
+}
 .logo-annamori-wrap {
   --ray-long-min: ${SCALE_LONG_MIN.toFixed(4)};
   --ray-short-max: ${SCALE_SHORT_MAX.toFixed(4)};
 }
-@keyframes logo-ray-long {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(var(--ray-long-min)); }
+@keyframes logo-sun-spin {
+  0% { transform: rotate(0deg); }
+  ${PAUSE_FROM}% { transform: rotate(-360deg); }
+  100% { transform: rotate(-360deg); }
 }
-@keyframes logo-ray-short {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(var(--ray-short-max)); }
+${logoRayPulseLongCss}
+${logoRayPulseShortCss}
+.logo-annamori-wrap .sun-rotate {
+  transform-origin: ${fmt(CX)}px ${fmt(CY)}px;
+  transform-box: view-box;
+  animation: logo-sun-spin ${CYCLE_S}s linear infinite;
 }
-.logo-annamori-wrap .ray-long { animation: logo-ray-long 2s ease-in-out infinite; }
-.logo-annamori-wrap .ray-short { animation: logo-ray-short 2s ease-in-out infinite; }
+.logo-annamori-wrap .ray-long { animation: logo-ray-long ${CYCLE_S}s ease-in-out infinite; }
+.logo-annamori-wrap .ray-short { animation: logo-ray-short ${CYCLE_S}s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
+  .logo-annamori-wrap .sun-rotate,
   .logo-annamori-wrap .ray-long,
   .logo-annamori-wrap .ray-short { animation: none; }
 }
