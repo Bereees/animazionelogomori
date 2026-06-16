@@ -6,17 +6,13 @@
   line-height: 0;
 }
 .logo-annamori-wrap svg {
-  width: 320px;
+  width: 120px;
   height: auto;
   display: block;
 }
 .logo-annamori-wrap {
   --ray-long-min: 0.6180;
   --ray-short-max: 1.6180;
-}
-@keyframes logo-sun-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(-360deg); }
 }
 @keyframes logo-ray-long {
   0%, 100% { transform: scale(1); }
@@ -26,20 +22,15 @@
   0%, 100% { transform: scale(1); }
   50% { transform: scale(var(--ray-short-max)); }
 }
-.logo-annamori-wrap .sun-rotate {
-  transform-origin: 2759.1px 2759.1px;
-  animation: logo-sun-spin 30s linear infinite;
-}
 .logo-annamori-wrap .ray-long { animation: logo-ray-long 2s ease-in-out infinite; }
 .logo-annamori-wrap .ray-short { animation: logo-ray-short 2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .logo-annamori-wrap .sun-rotate,
   .logo-annamori-wrap .ray-long,
   .logo-annamori-wrap .ray-short { animation: none; }
 }
 </style>
 <svg viewBox="0 0 5519 5519" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="logo-annamori-svg">
-  <g id="sun" class="sun-rotate">
+  <g id="sun">
     <circle class="sun-core" cx="2759.1" cy="2759.1" r="1427.553" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="16" stroke-linejoin="round"/>
     <g class="ray ray-long" style="transform-origin: 2759.101px 1383.8px"><path d="M2650.863,1383.8 L2759.1,0 L2867.338,1383.8 Z" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="16" stroke-linejoin="round"/></g>
     <g class="ray ray-short" style="transform-origin: 2974.244px 1400.733px"><path d="M2867.338,1383.8 L3108.288,554.421 L3081.15,1417.667 Z" fill="#1a1a1a" stroke="#1a1a1a" stroke-width="16" stroke-linejoin="round"/></g>

@@ -1,4 +1,4 @@
-/* Logo Annamori — rotazione antioraria + pulse alternato punte */
+/* Logo Annamori — pulse alternato punte */
 
 .logo-annamori {
   display: inline-block;
@@ -7,7 +7,7 @@
 
 .logo-annamori svg,
 .logo-annamori-svg {
-  width: 320px;
+  width: 120px;
   height: auto;
   display: block;
   shape-rendering: geometricPrecision;
@@ -16,11 +16,6 @@
 :root {
   --ray-long-min: 0.6180;
   --ray-short-max: 1.6180;
-}
-
-@keyframes sun-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(-360deg); }
 }
 
 @keyframes ray-pulse-long {
@@ -33,11 +28,6 @@
   50% { transform: scale(var(--ray-short-max)); }
 }
 
-.sun-rotate {
-  transform-origin: 2759.1px 2759.1px;
-  animation: sun-spin 30s linear infinite;
-}
-
 .ray-long {
   animation: ray-pulse-long 2s ease-in-out infinite;
 }
@@ -47,7 +37,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sun-rotate,
   .ray-long,
   .ray-short {
     animation: none;
