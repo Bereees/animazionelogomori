@@ -158,6 +158,13 @@ const rayMarkup = rays
   })
   .join("\n");
 
+const rayMarkupCompact = rays
+  .map((r) => {
+    const style = `transform-origin:${fmt(r.ox)}px ${fmt(r.oy)}px`;
+    return `<g class="ray ray-${r.kind}" style="${style}"><path d="${r.d}"/></g>`;
+  })
+  .join("");
+
 const svg = `<svg viewBox="0 0 5519 5519" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="logo-annamori-svg">
   <g id="sun" class="sun-rotate">
     <circle class="sun-core" cx="${fmt(CX)}" cy="${fmt(CY)}" r="${fmt(coreRadius)}" ${PATH_ATTRS}/>
@@ -165,6 +172,8 @@ ${rayMarkup}
   </g>
 </svg>
 `;
+
+const svgCompact = `<svg viewBox="0 0 5519 5519" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="logo-annamori-svg"><g id="sun" class="sun-rotate"><circle class="sun-core" cx="${fmt(CX)}" cy="${fmt(CY)}" r="${fmt(coreRadius)}"/>${rayMarkupCompact}</g></svg>`;
 
 const css = `/* Logo Annamori — pulse, pausa, rotazione antioraria lenta */
 
@@ -258,7 +267,52 @@ ${svg.trim()}
 
 fs.writeFileSync(path.join(root, "index.html"), html, "utf8");
 
-const elementor = `<!-- Logo Annamori — incolla in Elementor > Widget HTML -->
+const elementorCss = `/* Logo Annamori — incolla UNA VOLTA in Elementor > Impostazioni sito > CSS personalizzato */
+.logo-annamori-wrap {
+  display: inline-block;
+  line-height: 0;
+  --ray-long-min: ${SCALE_LONG_MIN.toFixed(4)};
+  --ray-short-max: ${SCALE_SHORT_MAX.toFixed(4)};
+}
+.logo-annamori-wrap svg {
+  width: 120px;
+  height: auto;
+  display: block;
+  shape-rendering: geometricPrecision;
+}
+.logo-annamori-wrap svg path,
+.logo-annamori-wrap svg circle {
+  fill: ${FILL};
+  stroke: ${FILL};
+  stroke-width: 16;
+  stroke-linejoin: round;
+}
+@keyframes logo-sun-spin {
+  0% { transform: rotate(0deg); }
+  ${PAUSE_FROM}% { transform: rotate(-360deg); }
+  100% { transform: rotate(-360deg); }
+}
+${logoRayPulseLongCss}
+${logoRayPulseShortCss}
+.logo-annamori-wrap .sun-rotate {
+  transform-origin: ${fmt(CX)}px ${fmt(CY)}px;
+  transform-box: view-box;
+  animation: logo-sun-spin ${CYCLE_S}s linear infinite;
+}
+.logo-annamori-wrap .ray-long { animation: logo-ray-pulse-long ${CYCLE_S}s ease-in-out infinite; }
+.logo-annamori-wrap .ray-short { animation: logo-ray-pulse-short ${CYCLE_S}s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .logo-annamori-wrap .sun-rotate,
+  .logo-annamori-wrap .ray-long,
+  .logo-annamori-wrap .ray-short { animation: none; }
+}
+`;
+
+const elementorHtml = `<!-- Logo Annamori — solo HTML (leggero). CSS: vedi elementor-snippet.css -->
+<div class="logo-annamori-wrap">${svgCompact}</div>
+`;
+
+const elementorFull = `<!-- Logo Annamori — tutto-in-uno (più pesante). Preferire elementor-snippet.html + .css -->
 <div class="logo-annamori-wrap">
 <style>
 .logo-annamori-wrap {
@@ -291,8 +345,8 @@ ${logoRayPulseShortCss}
   transform-box: view-box;
   animation: logo-sun-spin ${CYCLE_S}s linear infinite;
 }
-.logo-annamori-wrap .ray-long { animation: logo-ray-long ${CYCLE_S}s ease-in-out infinite; }
-.logo-annamori-wrap .ray-short { animation: logo-ray-short ${CYCLE_S}s ease-in-out infinite; }
+.logo-annamori-wrap .ray-long { animation: logo-ray-pulse-long ${CYCLE_S}s ease-in-out infinite; }
+.logo-annamori-wrap .ray-short { animation: logo-ray-pulse-short ${CYCLE_S}s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .logo-annamori-wrap .sun-rotate,
   .logo-annamori-wrap .ray-long,
@@ -303,7 +357,9 @@ ${svg.trim()}
 </div>
 `;
 
-fs.writeFileSync(path.join(root, "elementor-snippet.html"), elementor, "utf8");
+fs.writeFileSync(path.join(root, "elementor-snippet.css"), elementorCss, "utf8");
+fs.writeFileSync(path.join(root, "elementor-snippet.html"), elementorHtml, "utf8");
+fs.writeFileSync(path.join(root, "elementor-snippet-full.html"), elementorFull, "utf8");
 
 console.log(`Built ${rays.length} rays (${groups} long + ${groups} short)`);
 console.log(`Scale: long min=${SCALE_LONG_MIN.toFixed(4)}, short max=${SCALE_SHORT_MAX.toFixed(4)}`);
